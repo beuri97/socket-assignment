@@ -5,5 +5,7 @@ from select import select
 soc = socket(AF_INET, SOCK_DGRAM)
 soc.bind((gethostname(), 6974))
 
-for port in sys.argv[1:]:
-    pass
+type(sys.argv[1])
+
+soc.sendto(b"Hola", ("127.0.0.1", int(sys.argv[1])))
+soc.close()
