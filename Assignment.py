@@ -1,27 +1,27 @@
 import socket
-import select
 
-HOST = '127.0.0.1'
+
+HOST_IP = '127.0.0.1' 
 err = '\033[91m'
 norm = '\033[0m'
 len_code = {0x0001, 0x0002, 0x0003}
 
-def dt_request_check(packet: bytearray):
-    """ check DT-request packet from client """
-    if len(packet) != 6:
-        print(f"{err}ERROR: Packet does not contain 6 bytes.{norm}")
+# def dt_request_check(packet: bytearray):
+#     """ check DT-request packet from client """
+#     if len(packet) != 6:
+#         print(f"{err}ERROR: Packet does not contain 6 bytes.{norm}")
     
-    elif (packet[0]<<8)|packet[1] != 0x497e:
-        print(f"{err}ERROR: Wrong packet received.{norm}")
+#     elif (packet[0]<<8)|packet[1] != 0x497e:
+#         print(f"{err}ERROR: Wrong packet received.{norm}")
     
-    elif (packet[2]<<8)|packet[3] != 0x0001:
-        print(f"{err}ERROR: Wrong packet type received.{norm}")
+#     elif (packet[2]<<8)|packet[3] != 0x0001:
+#         print(f"{err}ERROR: Wrong packet type received.{norm}")
     
-    elif (packet[4]<<8)|packet[5] != 0x0001 or (packet[4]<<8)|packet[5] != 0x0002:
-        print(f"{err}ERROR: Unknown Request.{norm}")
+#     elif (packet[4]<<8)|packet[5] != 0x0001 or (packet[4]<<8)|packet[5] != 0x0002:
+#         print(f"{err}ERROR: Unknown Request.{norm}")
     
-    else:
-        pass
+#     else:
+#         pass
 
 def dt_response_check(packet: bytearray):
     """ Check response from server. """
@@ -56,5 +56,4 @@ def dt_response_check(packet: bytearray):
         print(f"{err}PACKET ERROR: There are missing datas in the packetheader.{norm}")
 
     else:
-        select.select()
-
+        pass
