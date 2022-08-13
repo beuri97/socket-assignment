@@ -12,7 +12,13 @@ soc_list = [soc_1, soc_2, soc_3]
 
 while True:
     a, b, c = select(soc_list,[], [])
-    for d in a:
-        msg, addr = d.recvfrom(5000)
-        print(msg ,addr)
-        d.close()
+    print(a, b, c)
+    if a[0] == soc_1:
+        msg, addr = a[0].recvfrom(50000)
+        print(f"Hi client from {addr}. This is port 5001")
+    elif a[0] == soc_2:
+        msg, addr = a[0].recvfrom(50000)
+        print(f"Hi client from {addr}. This is port 5002")
+    elif a[0] == soc_3:
+        msg, addr = a[0].recvfrom(50000)
+        print(f"Hi client from {addr}. This is port 5003")
