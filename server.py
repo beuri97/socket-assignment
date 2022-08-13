@@ -38,6 +38,7 @@ while True:
     a, b, c = select(soc_list,[], [])
     if a[0] in soc_list:
         msg, addr = a[0].recvfrom(50000)
+        print(f"I got {addr} packet")
         dt_request_check(msg)
         
 
