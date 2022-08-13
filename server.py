@@ -1,6 +1,7 @@
 from select import select
 from socket import *
 
+
 soc_1 = socket(AF_INET, SOCK_DGRAM)
 soc_1.bind(("127.0.0.1",5001))
 soc_2 = socket(AF_INET, SOCK_DGRAM)
@@ -12,7 +13,6 @@ soc_list = [soc_1, soc_2, soc_3]
 
 while True:
     a, b, c = select(soc_list,[], [])
-    print(a, b, c)
     if a[0] == soc_1:
         msg, addr = a[0].recvfrom(50000)
         print(f"Hi client from {addr}. This is port 5001")
