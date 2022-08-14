@@ -2,7 +2,6 @@ from select import select
 from socket import *
 
 
-HOST_IP = '127.0.0.1' 
 err = '\033[91m'
 norm = '\033[0m'
 len_code = {0x0001, 0x0002, 0x0003}
@@ -26,11 +25,11 @@ def dt_request_check(packet: bytearray):
 
 
 soc_1 = socket(AF_INET, SOCK_DGRAM)
-soc_1.bind(("127.0.0.1",5001))
+soc_1.bind(("",5001))
 soc_2 = socket(AF_INET, SOCK_DGRAM)
-soc_2.bind(("127.0.0.1", 5002))
+soc_2.bind(("", 5002))
 soc_3  = socket(AF_INET, SOCK_DGRAM)
-soc_3.bind(("127.0.0.1", 5003))
+soc_3.bind(("", 5003))
 
 soc_list = [soc_1, soc_2, soc_3]
 
