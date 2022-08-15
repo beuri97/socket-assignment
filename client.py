@@ -7,5 +7,5 @@ soc = socket(AF_INET, SOCK_DGRAM)
 soc.bind((HOST, 7777))
 
 
-soc.sendto('', (sys.argv[1], int(sys.argv[2])))
+soc.sendto(b'Hello?', (sys.argv[1], int(sys.argv[2])))
 soc.close()
