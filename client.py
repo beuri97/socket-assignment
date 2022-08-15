@@ -1,10 +1,11 @@
 import sys
-from socket import AF_INET, SOCK_DGRAM, gethostname, socket
+from socket import AF_INET, SOCK_DGRAM, gethostbyname_ex, gethostname, socket
 from select import select
 
-server = sys.argv[1]
+HOST = gethostbyname_ex(gethostname())[2][1]
 soc = socket(AF_INET, SOCK_DGRAM)
-soc.bind(("", 64000))
+soc.bind((HOST, 7777))
 
-soc.sendto(b"Hola", (server, int(sys.argv[2])))
+
+soc.sendto('', (sys.argv[1], int(sys.argv[2])))
 soc.close()
