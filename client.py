@@ -17,10 +17,10 @@ def dt_response_check(packet: bytearray) -> bytes:
     
     text = packet[13:]
     if (packet[0]<<8)|packet[1] != 0x497e:
-        print(f"{err}PACKET ERROR: Packet does not meet key requirement.{norm}")
+        print(f"{err}PACKET ERROR: Packet does not meet Magic No requirement.{norm}")
     
     elif (packet[2]<<8)|packet[3] != 0x0002:
-        print(f"{err}PACKET ERROR: Packet does not meet its requirement.{norm}")
+        print(f"{err}PACKET ERROR: Packet does not meet Packet Type requirement.{norm}")
     
     elif (packet[4]<<8)|packet[5] not in len_code:
         print(f"{err}PACKET ERROR: Language not support.{norm}")
@@ -69,7 +69,7 @@ else:
     print(f"{err}REQUEST ERROR: Unknown Request Type.{norm}")
 
 
-addr = getaddrinfo(sys.argv[2], int(sys.argv[3]))[0][4]
+addr = getaddrinfo(sys.argv[2], int(sys.argv[3]), AF_INET)[0][4]
 soc.sendto(dt_request, addr)
 rlist, wlist, exp = select([soc], [], [],1.0)
 if rlist == []:

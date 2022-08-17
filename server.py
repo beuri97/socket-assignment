@@ -6,21 +6,20 @@ import sys
 
 err = '\033[91m'
 norm = '\033[0m'
-len_code = {0x0001, 0x0002, 0x0003}
 
 def dt_request(packet: bytearray, port: int) -> tuple:
     """ check DT-request packet from client and generate packet to send back to client """
    
     if len(packet) != 6:
         print(f"{err}ERROR: Packet does not contain 6 bytes.{norm}")
-    
+
     elif (packet[0]<<8)|packet[1] != 0x497e:
         print(f"{err}ERROR: Wrong packet received.{norm}")
     
     elif (packet[2]<<8)|packet[3] != 0x0001:
         print(f"{err}ERROR: Wrong packet type received.{norm}")
     
-    elif (packet[4]<<8)|packet[5] >= 2:
+    elif (packet[4]<<8)|packet[5] > 2:
         print(f"{err}ERROR: Unknown Request.{norm}")
     
     else:
@@ -31,24 +30,28 @@ def dt_request(packet: bytearray, port: int) -> tuple:
         day_now = int(strftime("%d", localtime()))
         hour_now = int(strftime("%H", localtime()))
         min_now = int(strftime("%M", localtime()))
+        request_type = (packet[4]<<8)|packet[5]
 
-        if port == 5001 and (packet[4]<<8)|packet[5] == 0x0001:          # Date in English
+        if port == 5001 and request_type == 0x0001:          # Date in English
             l_code = 0x0001
-            pay_load = f"Today's date is {month_now} {day_now}, {year_now}"
-            pay_load = bytes(pay_load, encoding='utf-8')
+            pay_load = bytes(f"Today's date is {month_now} {day_now}, {year_now}", encoding='utf-8')
         
-        elif port == 5001 and (packet[4]<<8)|packet[5] == 0x0002:        # Time in English
+        elif port == 5001 and request_type == 0x0002:        # Time in English
             l_code = 0x0001
-            pay_load = f"The current time is {hour_now}:{min_now}"
-            pay_load = bytes(pay_load, encoding='utf-8')
+            pay_load = bytes(f"The current time is {hour_now}:{min_now}", encoding='utf-8')
 
-        if port == 5002 and (packet[4]<<8)|packet[5] == 0x0001:          # Date in Te reo Maori
+        if port == 5002 and request_type == 0x0001:          # Date in Te reo Maori
             l_code = 0x0002
+            pay_load = bytes(f"Ko te ra o tenei ra ko {month_now} {day_now}, {year_now}", encoding='utf-8')
        
-        elif port == 5002 and (packet[4]<<8)|packet[5] == 0x0002:        # Time in Te reo Maori
+        elif port == 5002 and request_type == 0x0002:        # Time in Te reo Maori
             l_code = 0x0002
+            pay_load = bytes(f"Ko te wa o tenei wa {hour_now}:{min_now}", encoding='utf-8')
 
-        if port == 5003:     
+        if port == 5003 and request_type == 0x0001:          # Date in German
+            l_code = 0x0003
+
+        elif port == 5003 and request_type == 0x0002:        # Time in German
             l_code = 0x0003
 
         # DT-Response packet generate begins.
@@ -71,26 +74,29 @@ def dt_request(packet: bytearray, port: int) -> tuple:
         return new_packet
 
 
-soc_1 = socket(AF_INET, SOCK_DGRAM)
-soc_1.bind(('',5001))
-soc_2 = socket(AF_INET, SOCK_DGRAM)
-soc_2.bind(('',5002))
-soc_3  = socket(AF_INET, SOCK_DGRAM)
-soc_3.bind(('',5003))
+def server():
+    """ main function """
+    soc_1 = socket(AF_INET, SOCK_DGRAM)
+    soc_1.bind(('',5001))
+    soc_2 = socket(AF_INET, SOCK_DGRAM)
+    soc_2.bind(('',5002))
+    soc_3  = socket(AF_INET, SOCK_DGRAM)
+    soc_3.bind(('',5003))
 
-soc_list = [soc_1, soc_2, soc_3]
+    soc_list = [soc_1, soc_2, soc_3]
 
-try:
-    while True:
-        a, b, c = select(soc_list,[], [])
-        if a[0] in soc_list:
-            port = a[0].getsockname()[1]
-            msg, addr = a[0].recvfrom(50000)
-            new_msg = dt_request(msg, port)
-            a[0].sendto(new_msg, addr)
+    try:
+        while True:
+            a, b, c = select(soc_list,[], [])
+            if a[0] in soc_list:
+                port = a[0].getsockname()[1]
+                msg, addr = a[0].recvfrom(50000)
+                new_msg = dt_request(msg, port)
+                a[0].sendto(new_msg, addr)
 
-except KeyboardInterrupt:
-    
-    a[0].close()
-    print("MESSAGE: Server is been shutdown.")
-    sys.exit()
+    except KeyboardInterrupt:
+        print("\nMESSAGE: Server is been shutdown.")
+        sys.exit()
+
+if __name__ == '__main__':
+    server()
