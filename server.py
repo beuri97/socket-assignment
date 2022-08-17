@@ -24,7 +24,6 @@ def dt_request(packet: bytearray, port: int) -> tuple:
         print(f"{err}ERROR: Unknown Request.{norm}")
     
     else:
-        print("MESSAGE: Server got package on: ", end = ' ')
         mg_num = 0x497E
         pak_type = 0x0002
         year_now = int(strftime("%Y", localtime()))
