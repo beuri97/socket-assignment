@@ -4,15 +4,19 @@ from select import select
 
 
 err = '\033[91m'
+wrn = '\033[93m'
 norm = '\033[0m'
 len_code = {0x0001, 0x0002, 0x0003}
 
-def dt_response_check(packet: bytearray):
+def dt_response_check(packet: bytearray) -> bytes:
     """ Check response from server. """
-    if len(packet) != 13:
-        print(f"{err}PACKET ERROR: Packet does not contain 13 bytes.{norm}")
+
+    if len(packet) < 13:
+        print(f"{err}PACKET ERROR: Packet header does not contain 13 bytes.{norm}")
+        return  #need to terminate this function immidiately if packet header does not meet requirement.
     
-    elif (packet[0]<<8)|packet[1] != 0x497e:
+    text = packet[13:]
+    if (packet[0]<<8)|packet[1] != 0x497e:
         print(f"{err}PACKET ERROR: Packet does not meet key requirement.{norm}")
     
     elif (packet[2]<<8)|packet[3] != 0x0002:
@@ -36,11 +40,14 @@ def dt_response_check(packet: bytearray):
     elif packet[11] not in range(0, 60):
         print(f"{err}PACKET ERROR: Packet header contains wrong minute info.{norm}")
     
-    elif packet[12] != (32*3)+8:
+    elif packet[12] != len(text):
         print(f"{err}PACKET ERROR: There are missing datas in the packetheader.{norm}")
 
     else:
-        pass
+        print("MESSAGE: You've got a perfect packet!")
+        
+        return text
+
 
 
 soc = socket(AF_INET, SOCK_DGRAM)
@@ -62,12 +69,14 @@ else:
     print(f"{err}REQUEST ERROR: Unknown Request Type.{norm}")
 
 
-soc.sendto(dt_request, (sys.argv[2], int(sys.argv[3])))
-rlist, wlist, time = select([soc], [], [])
+addr = getaddrinfo(sys.argv[2], int(sys.argv[3]))[0][4]
+soc.sendto(dt_request, addr)
+rlist, wlist, exp = select([soc], [], [],1.0)
+if rlist == []:
+    print(f"{wrn}FATAL: One second timed out to receive packet!{norm}")
 for sock in rlist:
     msg, addr = sock.recvfrom(50000)
-    print(msg)
-    msg = dt_response_check(msg)
+    text = dt_response_check(msg)
 
     if msg != None:
         text = text.decode(encoding='utf-8')
