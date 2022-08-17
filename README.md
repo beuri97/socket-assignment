@@ -1,2 +1,4 @@
 # cosc264
-cosc264 assignment, quiz, super quiz.
+## SEM 2, 2022
+
+COSC264 assignment, quiz, super quiz.
