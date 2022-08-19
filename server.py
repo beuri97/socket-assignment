@@ -106,7 +106,7 @@ def server():
                 else:
                     raise Exception
 
-    except KeyboardInterrupt and Exception:
+    except KeyboardInterrupt or Exception:
         print("\nMESSAGE: Server is been shutdown.")
         sys.exit()
 
