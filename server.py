@@ -11,13 +11,15 @@ norm = '\033[0m'
 def generate_response(port: int, request_type: int) -> tuple:
     """ Generate response packet """
 
+    mnth = {'01':['January', 'Kohitatea', 'Januar'], '02':['February', 'Hui-tanguru', 'Februar'], 
+            '03':['March', 'Poutu-te-rangi', 'Marz'], '04':['April','Paenga-whawha']}
     mg_num = 0x497E
     pak_type = 0x0002
-    year_now = int(strftime("%Y", localtime()))
-    month_now = int(strftime("%m", localtime()))
-    day_now = int(strftime("%d", localtime()))
-    hour_now = int(strftime("%H", localtime()))
-    min_now = int(strftime("%M", localtime()))
+    year_now = strftime("%Y", localtime()).zfill(2)
+    month_now = strftime("%m", localtime()).zfill(2)
+    day_now = strftime("%d", localtime()).zfill(2)
+    hour_now = strftime("%H", localtime()).zfill(2)
+    min_now = strftime("%M", localtime()).zfill(2)
 
     if port == 5001: 
         l_code = 0x0001
@@ -51,12 +53,12 @@ def generate_response(port: int, request_type: int) -> tuple:
     new_packet[3] = pak_type
     new_packet[4] = 0x00
     new_packet[5] = l_code
-    new_packet[6] = year_now >> 8
-    new_packet[7] = year_now & 0xFF
-    new_packet[8] = month_now
-    new_packet[9] = day_now
-    new_packet[10] = hour_now
-    new_packet[11] = min_now
+    new_packet[6] = int(year_now) >> 8
+    new_packet[7] = int(year_now) & 0xFF
+    new_packet[8] = int(month_now)
+    new_packet[9] = int(day_now)
+    new_packet[10] = int(hour_now)
+    new_packet[11] = int(min_now)
     new_packet[12] = len(pay_load)
     new_packet += pay_load
 
