@@ -12,7 +12,11 @@ def generate_response(port: int, request_type: int) -> tuple:
     """ Generate response packet """
 
     mnth = {'01':['January', 'Kohitatea', 'Januar'], '02':['February', 'Hui-tanguru', 'Februar'], 
-            '03':['March', 'Poutu-te-rangi', 'Marz'], '04':['April','Paenga-whawha']}
+            '03':['March', 'Poutu-te-rangi', 'Marz'], '04':['April','Paenga-whawha', 'April'],
+            '05':['May', 'Haratua', 'Mai'], '06':['June', 'Pipiri', 'Juni'], '07':['July', 'Hongongoi', 'Juli'],
+            '08':['August', 'Here-turi-koka', 'August'], '09':['September', 'Mahuru', 'Septempber'],
+            '10':['October', 'Whiringa-a-nuku', 'Oktober'], '11':['November', 'Whiringa-a-rangi', 'November'],
+            '12':['December', 'Hakihea', 'Dezember']}
     mg_num = 0x497E
     pak_type = 0x0002
     year_now = strftime("%Y", localtime()).zfill(2)
@@ -24,7 +28,7 @@ def generate_response(port: int, request_type: int) -> tuple:
     if port == 5001: 
         l_code = 0x0001
         if request_type == 0x0001:          # Date in English
-            pay_load = bytes(f"Today's date is {month_now} {day_now}, {year_now}", encoding='utf-8')
+            pay_load = bytes(f"Today's date is {mnth[month_now][0]} {day_now}, {year_now}", encoding='utf-8')
         
         elif request_type == 0x0002:        # Time in English
             pay_load = bytes(f"The current time is {hour_now}:{min_now}", encoding='utf-8')
@@ -32,7 +36,7 @@ def generate_response(port: int, request_type: int) -> tuple:
     elif port == 5002:
         l_code = 0x0002
         if  request_type == 0x0001:         # Date in Te reo Maori
-            pay_load = bytes(f"Ko te ra o tenei ra ko {month_now} {day_now}, {year_now}", encoding='utf-8')
+            pay_load = bytes(f"Ko te ra o tenei ra ko {mnth[month_now][1]} {day_now}, {year_now}", encoding='utf-8')
        
         elif request_type == 0x0002:        # Time in Te reo Maori
             pay_load = bytes(f"Ko te wa o tenei wa {hour_now}:{min_now}", encoding='utf-8')
@@ -40,7 +44,7 @@ def generate_response(port: int, request_type: int) -> tuple:
     elif port == 5003:
         l_code = 0x0003
         if request_type == 0x0001:          # Date in German
-            pay_load = bytes(f"Heute ist der {day_now} {month_now} {year_now}", encoding='utf-8')
+            pay_load = bytes(f"Heute ist der {day_now} {mnth[month_now][2]} {year_now}", encoding='utf-8')
 
         elif request_type == 0x0002:        # Time in German
             pay_load = bytes(f"Die Uhrzeit ist {hour_now}:{min_now}", encoding='utf-8')
