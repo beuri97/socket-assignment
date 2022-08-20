@@ -5,6 +5,7 @@ import sys
 
 
 err = '\033[91m'
+wrn = '\033[93m'
 norm = '\033[0m'
 
 
@@ -111,9 +112,13 @@ def server():
                     a[0].sendto(new_msg, addr)
                 else:
                     raise Exception
+    
+    except Exception:
+        print(f"{wrn}FATAL: Cannot give any response to client.{norm}")
+        sys.exit()
 
-    except KeyboardInterrupt or Exception:
-        print("\nMESSAGE: Server is been shutdown.")
+    except KeyboardInterrupt:
+        print("\n\nMESSAGE: Server is been shutdown.")
         sys.exit()
 
 if __name__ == '__main__':
