@@ -3,7 +3,7 @@ from socket import *
 from time import localtime, strftime
 import sys
 
-
+# colour print
 err = '\033[91m'
 wrn = '\033[93m'
 norm = '\033[0m'
@@ -18,6 +18,7 @@ def generate_response(port: int, request_type: int) -> tuple:
             '08':['August', 'Here-turi-koka', 'August'], '09':['September', 'Mahuru', 'Septempber'],
             '10':['October', 'Whiringa-a-nuku', 'Oktober'], '11':['November', 'Whiringa-a-rangi', 'November'],
             '12':['December', 'Hakihea', 'Dezember']}
+    
     mg_num = 0x497E
     pak_type = 0x0002
     year_now = strftime("%Y", localtime()).zfill(2)
@@ -73,7 +74,7 @@ def generate_response(port: int, request_type: int) -> tuple:
 def dt_request(packet: bytearray) -> int:
     """ check DT-request packet from client and generate packet to send back to client """
    
-    if len(packet) != 6:
+    if len(packet) != 8:
         print(f"{err}ERROR: Packet does not contain 6 bytes.{norm}")
 
     elif (packet[0]<<8)|packet[1] != 0x497e:
@@ -91,17 +92,23 @@ def dt_request(packet: bytearray) -> int:
 
 def server():
     """ main function """
-    soc_1 = socket(AF_INET, SOCK_DGRAM)
-    soc_1.bind(('',5001))
-    soc_2 = socket(AF_INET, SOCK_DGRAM)
-    soc_2.bind(('',5002))
-    soc_3  = socket(AF_INET, SOCK_DGRAM)
-    soc_3.bind(('',5003))
+    try:
+        soc_1 = socket(AF_INET, SOCK_DGRAM)
+        soc_1.bind(('',5001))
+        soc_2 = socket(AF_INET, SOCK_DGRAM)
+        soc_2.bind(('',5002))
+        soc_3  = socket(AF_INET, SOCK_DGRAM)
+        soc_3.bind(('',5003))
+    
+    except Exception as e:
+        print(f"{err}ERROR: Binding Failure.{norm}")
+        sys.exit()
 
     soc_list = [soc_1, soc_2, soc_3]
 
-    try:
-        while True:
+
+    while True:
+        try:
             a, b, c = select(soc_list,[], [])
             if a[0] in soc_list:
                 port = a[0].getsockname()[1]
@@ -111,15 +118,14 @@ def server():
                     new_msg = generate_response(port, request_type)
                     a[0].sendto(new_msg, addr)
                 else:
-                    raise Exception
-    
-    except Exception:
-        print(f"{wrn}FATAL: Cannot give any response to client.{norm}")
-        sys.exit()
+                    print(f"{wrn}FATAL: Packet request from client does not match the requirement.")
+                    print(f"FATAL: Cannot give any response packet to client.{norm}")
+                    a.remove(a[0])
 
-    except KeyboardInterrupt:
-        print("\n\nMESSAGE: Server is been shutdown.")
-        sys.exit()
+        except KeyboardInterrupt:
+            print("\n\nMESSAGE: Server is been shutdown.")
+            sys.exit()
+
 
 if __name__ == '__main__':
     server()

@@ -8,12 +8,13 @@ wrn = '\033[93m'
 norm = '\033[0m'
 len_code = {0x0001, 0x0002, 0x0003}
 
+
 def dt_response_check(packet: bytearray) -> bytes:
     """ Check response from server. """
 
     if len(packet) < 13:
         print(f"{err}PACKET ERROR: Packet header does not contain 13 bytes.{norm}")
-        return  #need to terminate this function immidiately if packet header does not meet requirement.
+        return  # need to terminate this function immidiately if packet header does not meet requirement.
     
     text = packet[13:]
     if (packet[0]<<8)|packet[1] != 0x497e:
@@ -51,7 +52,6 @@ def dt_response_check(packet: bytearray) -> bytes:
 
 
 soc = socket(AF_INET, SOCK_DGRAM)
-soc.bind(('', 7777))
 
 dt_request = bytearray(6)
 dt_request[0] = 0x497E >> 8
