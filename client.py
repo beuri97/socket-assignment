@@ -1,15 +1,18 @@
+""" 'client.py' starts here. """
+
 import sys
 from socket import AF_INET, SOCK_DGRAM, gaierror, getaddrinfo, socket
 from select import select
 
-
+# Coloring Print message
 err = '\033[91m'
 wrn = '\033[93m'
 norm = '\033[0m'
-len_code = {0x0001, 0x0002, 0x0003}
+# Set of language code to check packet.
+lang_code = {0x0001, 0x0002, 0x0003}
 
 
-def dt_response_check(packet: bytearray) -> bytes:
+def dt_response_check(packet: bytearray) -> tuple:
     """ Check response from server. """
 
     # Check Date time response packet begins.
@@ -18,25 +21,25 @@ def dt_response_check(packet: bytearray) -> bytes:
         sys.exit()
     
     # Seperate packet components here.
-    mg_num = (packet[0]<<8)|packet[1]   # Magic number
-    tpe = (packet[2]<<8)|packet[3]      # type of packet
-    lang = (packet[4]<<8)|packet[5]     # language type
-    year = (packet[6]<<8)|packet[7]     # current Year
-    mnth = packet[8]                    # current Month
-    day = packet[9]                     # current day
-    hour = packet[10]                   # current hour
-    minute = packet[11]                 # current minute
-    pkt_length = packet[12]             # total length of text
-    text = packet[13:]                  # actual response from server
+    mg_num = (packet[0] << 8) | packet[1]   # Magic number
+    pkt_type = (packet[2] << 8) | packet[3] # type of packet
+    lang = (packet[4] << 8) | packet[5]     # language type
+    year = (packet[6] << 8) | packet[7]     # current Year
+    mnth = packet[8]                        # current Month
+    day = packet[9]                         # current day
+    hour = packet[10]                       # current hour
+    minute = packet[11]                     # current minute
+    pkt_length = packet[12]                 # text length
+    text = packet[13:]                      # actual response
 
     # Checking packet resume from here
     if mg_num != 0x497e:
         print(f"{err}PACKET ERROR: Packet does not meet Magic No requirement.{norm}")
     
-    elif tpe != 0x0002:
+    elif pkt_type != 0x0002:
         print(f"{err}PACKET ERROR: Packet does not meet Packet Type requirement.{norm}")
     
-    elif lang not in len_code:
+    elif lang not in lang_code:
         print(f"{err}PACKET ERROR: Language not support.{norm}")
     
     elif year >= 2100:
@@ -59,12 +62,13 @@ def dt_response_check(packet: bytearray) -> bytes:
 
     else:
         print("MESSAGE: You've got a perfect packet!")
+        content = (mg_num, pkt_type, lang, year, mnth, day, hour, minute, pkt_length, text.decode('utf-8'))
 
-        return mg_num, tpe, lang, year, mnth, day, hour, minute, pkt_length, text.decode('utf-8')
+        return content
 
 
 
-soc = socket(AF_INET, SOCK_DGRAM)
+sokt = socket(AF_INET, SOCK_DGRAM)
 
 dt_request = bytearray(6)
 dt_request[0] = 0x497E >> 8
@@ -86,31 +90,35 @@ else:
 try:
     assert 1024 <= int(sys.argv[3]) <= 64000
     addr = getaddrinfo(sys.argv[2], int(sys.argv[3]), AF_INET)[0][4]
-    soc.sendto(dt_request, addr)
-    rlist, wlist, exp = select([soc], [], [],1.0)
-    if rlist == []:
-        print(f"{wrn}FATAL: One second timed out to receive packet!{norm}")
-    for sock in rlist:
+    sokt.sendto(dt_request, addr)
+    socket_list, empty_list, except_list = select([sokt], [], [], 1.0)
+    if len(socket_list) == 0:
+        raise RuntimeError
+
+    for sock in socket_list:
         msg, addr = sock.recvfrom(50000)
-        contents = dt_response_check(msg)
+        content = dt_response_check(msg)
     
-    if contents != None:
-        print(f"Magic number    : {contents[0]} ({hex(contents[0])})")
-        print(f"Packet Type     : {contents[1]}")
-        print(f"Language Code   : {contents[2]}")
-        print(f"Year            : {contents[3]}")
-        print(f"Month           : {contents[4]}")
-        print(f"Day             : {contents[5]}")
-        print(f"Hour            : {contents[6]}")
-        print(f"Minute          : {contents[7]}")
-        print(f"Response Length : {contents[8]}")
-        print(f"Response        : {contents[9]}")
+    if content != None:
+        print(f"Magic number    : {content[0]}")
+        print(f"Packet Type     : {content[1]}")
+        print(f"Language Code   : {content[2]}")
+        print(f"Year            : {content[3]}")
+        print(f"Month           : {content[4]}")
+        print(f"Day             : {content[5]}")
+        print(f"Hour            : {content[6]}")
+        print(f"Minute          : {content[7]}")
+        print(f"Response Length : {content[8]}")
+        print(f"Response        : {content[9]}")
 
 
 except gaierror:
     print(f"{err}ERROR: Invalid address.{norm}")
-    sys.exit()
 
 except AssertionError:
     print(f"{err}ERROR: Invalid port number")
-    sys.exit()
+
+except RuntimeError:
+    print(f"{wrn}FATAL: One second exceed to receive packet!{norm}")
+
+""" 'client.py' ends here. """
