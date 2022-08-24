@@ -9,6 +9,12 @@ wrn = '\033[93m'
 norm = '\033[0m'
 
 
+#Port numbers that this server will use to run.
+port1 = int(sys.argv[1])
+port2 = int(sys.argv[2])
+port3 = int(sys.argv[3])
+
+
 def generate_response(port: int, request_type: int) -> tuple:
     """ Generate response packet """
 
@@ -27,7 +33,8 @@ def generate_response(port: int, request_type: int) -> tuple:
     hour_now = strftime("%H", localtime()).zfill(2)
     min_now = strftime("%M", localtime()).zfill(2)
 
-    if port == 5001: 
+    # 'port' is a port number requested by clients, 'port1', 'port2', 'port3' is the port numbers that the server is running.
+    if port == port1: 
         l_code = 0x0001
         if request_type == 0x0001:          # Date in English
             pay_load = bytes(f"Today's date is {mnth[month_now][0]} {day_now}, {year_now}", encoding='utf-8')
@@ -35,7 +42,7 @@ def generate_response(port: int, request_type: int) -> tuple:
         elif request_type == 0x0002:        # Time in English
             pay_load = bytes(f"The current time is {hour_now}:{min_now}", encoding='utf-8')
 
-    elif port == 5002:
+    elif port == port2:
         l_code = 0x0002
         if  request_type == 0x0001:         # Date in Te reo Maori
             pay_load = bytes(f"Ko te ra o tenei ra ko {mnth[month_now][1]} {day_now}, {year_now}", encoding='utf-8')
@@ -43,7 +50,7 @@ def generate_response(port: int, request_type: int) -> tuple:
         elif request_type == 0x0002:        # Time in Te reo Maori
             pay_load = bytes(f"Ko te wa o tenei wa {hour_now}:{min_now}", encoding='utf-8')
 
-    elif port == 5003:
+    elif port == port3:
         l_code = 0x0003
         if request_type == 0x0001:          # Date in German
             pay_load = bytes(f"Heute ist der {day_now} {mnth[month_now][2]} {year_now}", encoding='utf-8')
@@ -74,7 +81,7 @@ def generate_response(port: int, request_type: int) -> tuple:
 def dt_request(packet: bytearray) -> int:
     """ check DT-request packet from client and generate packet to send back to client """
    
-    if len(packet) != 8:
+    if len(packet) != 6:
         print(f"{err}ERROR: Packet does not contain 6 bytes.{norm}")
 
     elif (packet[0]<<8)|packet[1] != 0x497e:
@@ -92,20 +99,30 @@ def dt_request(packet: bytearray) -> int:
 
 def server():
     """ main function """
-    try:
-        soc_1 = socket(AF_INET, SOCK_DGRAM)
-        soc_1.bind(('',5001))
-        soc_2 = socket(AF_INET, SOCK_DGRAM)
-        soc_2.bind(('',5002))
-        soc_3  = socket(AF_INET, SOCK_DGRAM)
-        soc_3.bind(('',5003))
     
-    except Exception as e:
-        print(f"{err}ERROR: Binding Failure.{norm}")
+    try:
+        #check ports are in range 1024 and 64000(inclusive)
+        for port in [port1, port2, port3]:
+            assert 1024 <= port <= 64000
+
+        soc_1 = socket(AF_INET, SOCK_DGRAM)
+        soc_1.bind(('',port1))
+        soc_2 = socket(AF_INET, SOCK_DGRAM)
+        soc_2.bind(('',port2))
+        soc_3  = socket(AF_INET, SOCK_DGRAM)
+        soc_3.bind(('',port3))
+    
+    except AssertionError:
+        print(f"{err}ERROR: Port '{port}' is not in between 1024 and 64000{norm}")
         sys.exit()
 
-    soc_list = [soc_1, soc_2, soc_3]
+    except Exception:
+        print(f"{err}ERROR: Socket binding Failure.")
+        print(f"ERROR: Are the ports have unique value?{norm}")
+        sys.exit()
 
+    
+    soc_list = [soc_1, soc_2, soc_3]
 
     while True:
         try:
@@ -118,12 +135,15 @@ def server():
                     new_msg = generate_response(port, request_type)
                     a[0].sendto(new_msg, addr)
                 else:
-                    print(f"{wrn}FATAL: Packet request from client does not match the requirement.")
+                    print(f"{wrn}FATAL: Packet does not match the requirement.")
                     print(f"FATAL: Cannot give any response packet to client.{norm}")
                     a.remove(a[0])
 
         except KeyboardInterrupt:
-            print("\n\nMESSAGE: Server is been shutdown.")
+            print("\n\nMESSAGE: Shutting down this server.")
+            soc_1.close()
+            soc_2.close()
+            soc_3.close()
             sys.exit()
 
 
