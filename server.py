@@ -16,14 +16,19 @@ try:
     port1 = int(sys.argv[1])
     port2 = int(sys.argv[2])
     port3 = int(sys.argv[3])
-    if sys.argv[4] != None:
+   
+    if len(sys.argv) > 4: # To ignore after 3rd port number
         raise Exception
+    
+    elif len(sys.argv) < 4: # Return error if server has less than 3 ports.
+        raise IndexError
+   
     # check ports are in range 1024 and 64000(inclusive)
     for port in [port1, port2, port3]:
         assert 1024 <= port <= 64000
 
 except IndexError:
-    print(f"{err}ERROR: Please put port number.{norm}")
+    print(f"{err}ERROR: Need {4-len(sys.argv)} more of port number.{norm}")
     sys.exit()
 
 except AssertionError:
@@ -31,12 +36,11 @@ except AssertionError:
     sys.exit()
 
 except ValueError:
-    print(f"{err}ERROR: Port has to be number.{norm}\n(Hint: Do not use comma us spacing.)")
+    print(f"{err}ERROR: Port has to be number.{norm}\n(Hint: Do not use comma, use spacing instead.)")
     sys.exit()
 
 except Exception:
-    print(f"{wrn}MESSAGE: Ignore 4th port number - only need three of them.{norm}")
-    sys.exit()
+    print(f"{wrn}MESSAGE: Ignored after 3rd port number - only need three of them.{norm}")
 
 
 
@@ -83,7 +87,7 @@ def generate_response(port: int, request_type: int) -> tuple:
 
         elif request_type == 0x0002:  # Time in German
             pay_load = bytes(f"Die Uhrzeit ist {hour_now}:{min_now}", encoding='utf-8')
-
+            
     if len(pay_load) > 255:
         print(f"{err}ERROR: Text exceed 255 bytes.{norm}")
         return None
@@ -144,6 +148,7 @@ def server():
 
     soc_list = [sokt_1, sokt_2, sokt_3]
 
+    print("SERVER IS RUNNING: Waiting request from client!!!")
     while True:
         try:
             sokt_list, list_ignore, except_list = select(soc_list, [], [])

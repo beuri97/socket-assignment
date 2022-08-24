@@ -67,58 +67,67 @@ def dt_response_check(packet: bytearray) -> tuple:
         return content
 
 
+def client():
+    """ main client """
 
-sokt = socket(AF_INET, SOCK_DGRAM)
-
-dt_request = bytearray(6)
-dt_request[0] = 0x497E >> 8
-dt_request[1] = 0x497E & 0xFF
-dt_request[2] = 0x00
-dt_request[3] = 0x0001
-dt_request[4] = 0x00
-
-if sys.argv[1].lower() == 'date':
-    dt_request[5] = 0x01
-
-elif sys.argv[1].lower() == 'time':
-    dt_request[5] = 0x02
-
-else:
-    print(f"{err}REQUEST ERROR: Unknown Request Type.{norm}")
-    sys.exit()
-
-try:
-    assert 1024 <= int(sys.argv[3]) <= 64000
-    addr = getaddrinfo(sys.argv[2], int(sys.argv[3]), AF_INET)[0][4]
-    sokt.sendto(dt_request, addr)
-    socket_list, empty_list, except_list = select([sokt], [], [], 1.0)
-    if len(socket_list) == 0:
-        raise RuntimeError
-
-    for sock in socket_list:
-        msg, addr = sock.recvfrom(50000)
-        content = dt_response_check(msg)
+    if len(sys.argv) < 4:
+        print(f"{err}ERROR: you missing requirement(Either request type, address, or port){norm}")
+        sys.exit()
     
-    if content != None:
-        print(f"Magic number    : {content[0]}")
-        print(f"Packet Type     : {content[1]}")
-        print(f"Language Code   : {content[2]}")
-        print(f"Year            : {content[3]}")
-        print(f"Month           : {content[4]}")
-        print(f"Day             : {content[5]}")
-        print(f"Hour            : {content[6]}")
-        print(f"Minute          : {content[7]}")
-        print(f"Response Length : {content[8]}")
-        print(f"Response        : {content[9]}")
+    sokt = socket(AF_INET, SOCK_DGRAM)
+
+    dt_request = bytearray(6)
+    dt_request[0] = 0x497E >> 8
+    dt_request[1] = 0x497E & 0xFF
+    dt_request[2] = 0x00
+    dt_request[3] = 0x0001
+    dt_request[4] = 0x00
+
+    if sys.argv[1].lower() == 'date':
+        dt_request[5] = 0x01
+
+    elif sys.argv[1].lower() == 'time':
+        dt_request[5] = 0x02
+
+    else:
+        print(f"{err}REQUEST ERROR: Unknown Request Type.{norm}")
+        sys.exit()
+
+    try:
+        assert 1024 <= int(sys.argv[3]) <= 64000
+        addr = getaddrinfo(sys.argv[2], int(sys.argv[3]), AF_INET)[0][4]
+        sokt.sendto(dt_request, addr)
+        socket_list, empty_list, except_list = select([sokt], [], [], 1.0)
+        if len(socket_list) == 0:
+            raise RuntimeError
+
+        for sock in socket_list:
+            msg, addr = sock.recvfrom(50000)
+            content = dt_response_check(msg)
+        
+        if content != None:
+            print(f"Magic number    : {content[0]}")
+            print(f"Packet Type     : {content[1]}")
+            print(f"Language Code   : {content[2]}")
+            print(f"Year            : {content[3]}")
+            print(f"Month           : {content[4]}")
+            print(f"Day             : {content[5]}")
+            print(f"Hour            : {content[6]}")
+            print(f"Minute          : {content[7]}")
+            print(f"Response Length : {content[8]}")
+            print(f"Response        : {content[9]}")
 
 
-except gaierror:
-    print(f"{err}ERROR: Invalid address.{norm}")
+    except gaierror:
+        print(f"{err}ERROR: Invalid address.{norm}")
 
-except AssertionError:
-    print(f"{err}ERROR: Invalid port number")
+    except AssertionError:
+        print(f"{err}ERROR: Invalid port number")
 
-except RuntimeError:
-    print(f"{wrn}FATAL: One second exceed to receive packet!{norm}")
+    except RuntimeError:
+        print(f"{wrn}FATAL: One second exceed to receive packet!{norm}")
+
+if __name__ == '__main__':
+    client()
 
 """ 'client.py' ends here. """
