@@ -154,7 +154,7 @@ def server():
             sokt_list, list_ignore, except_list = select(soc_list, [], [])
             if sokt_list[0] in soc_list:
                 port = sokt_list[0].getsockname()[1]
-                msg, addr = sokt_list[0].recvfrom(50000)
+                msg, addr = sokt_list[0].recvfrom(1024)
                 request_type = dt_request(msg)
                 if request_type != None:
                     new_msg = generate_response(port, request_type)

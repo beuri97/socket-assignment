@@ -102,7 +102,7 @@ def client():
             raise RuntimeError
 
         for sock in socket_list:
-            msg, addr = sock.recvfrom(50000)
+            msg, addr = sock.recvfrom(1024)
             content = dt_response_check(msg)
         
         if content != None:
