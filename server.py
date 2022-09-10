@@ -44,7 +44,7 @@ except Exception:
 
 
 
-def generate_response(port: int, request_type: int) -> tuple:
+def generate_response(port: int, request_type: int) -> bytearray:
     """ Generate response packet """
 
     mnth = {'01': ['January', 'Kohitatea', 'Januar'], '02': ['February', 'Hui-tanguru', 'Februar'],
